@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local caches (Terraform provider plugin cache, etc.)
+.cache/
+
+# Terraform working files. The provider lock file (.terraform.lock.hcl) IS committed.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+plan.bin
+crash.log
+
+# OS / editor
+.DS_Store
+.idea/

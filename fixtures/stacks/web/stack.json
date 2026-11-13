@@ -1,0 +1,4 @@
+{
+  "title": "Web Application",
+  "description": "A synthetic AWS web stack: a load balancer in front of an application server with scoped IAM access to a private asset bucket. Built for Terraform learning."
+}

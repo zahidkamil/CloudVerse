@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Scan and validate fixtures on save",
+      "trigger": "PostFileSave",
+      "description": "Runs the secret/account-ID scan and sample validation whenever a fixture or sample file is saved. Deterministic scripts only, no agent calls.",
+      "matcher": "(^|/)(fixtures/|packages/samples/data/)",
+      "action": {
+        "type": "command",
+        "command": "COREPACK_ENABLE_DOWNLOAD_PROMPT=0 corepack pnpm run scan:secrets && COREPACK_ENABLE_DOWNLOAD_PROMPT=0 corepack pnpm run fixtures:validate",
+        "timeout": 60
+      }
+    }
+  ]
+}

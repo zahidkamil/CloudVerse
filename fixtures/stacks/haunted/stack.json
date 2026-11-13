@@ -1,0 +1,4 @@
+{
+  "title": "The Cursed Cloud",
+  "description": "A synthetic AWS web stack with a public web server, an IAM role, a storage bucket, and a private database. Built for security investigation."
+}
