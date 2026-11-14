@@ -1,6 +1,7 @@
 import { genericAdapter, providerIdFromName, type ProviderAdapter } from './adapter.ts';
 import { collectReferences, resolveReference, stripIndexes } from './addresses.ts';
 import { createGraph, type Graph } from './graph.ts';
+import { buildHierarchy, type Hierarchy } from './hierarchy.ts';
 import type { Evidence, GraphEdge, GraphNode } from './model.ts';
 import { IngestError, parsePlan, type PlanConfigModule, type TerraformPlan } from './plan.ts';
 import { redactSensitive } from './redact.ts';
@@ -20,6 +21,8 @@ export interface Diagnostic {
 
 export interface IngestResult {
   readonly graph: Graph;
+  /** Provider, scope and container tree over the graph's nodes. */
+  readonly hierarchy: Hierarchy;
   readonly diagnostics: readonly Diagnostic[];
   readonly terraformVersion: string;
 }
@@ -61,11 +64,32 @@ export function ingestPlanObject(value: unknown, options: IngestOptions = {}): I
   const diagnostics: Diagnostic[] = [];
   const edges = buildEdges(plan.configuration.root_module, instances, diagnostics);
 
+  const graph = addDerivedEdges(createGraph(nodes, edges), adapters);
   return {
-    graph: createGraph(nodes, edges),
+    graph,
+    hierarchy: buildHierarchy(graph, adapters),
     diagnostics,
     terraformVersion: plan.terraform_version,
   };
+}
+
+/**
+ * Ask each adapter for inferred edges and add them. Declared edges are copied as they
+ * are; derived edges with the same id merge their evidence.
+ */
+function addDerivedEdges(declared: Graph, adapters: readonly ProviderAdapter[]): Graph {
+  const derived = new Map<string, GraphEdge & { evidence: Evidence[] }>();
+  for (const adapter of adapters) {
+    for (const edge of adapter.relate?.(declared) ?? []) {
+      if (edge.from === edge.to) continue;
+      const id = `${edge.from}->${edge.to}:${edge.kind}`;
+      const existing = derived.get(id);
+      if (existing) existing.evidence.push(...edge.evidence);
+      else derived.set(id, { id, from: edge.from, to: edge.to, kind: edge.kind, assertion: 'inferred', evidence: [...edge.evidence] });
+    }
+  }
+  if (derived.size === 0) return declared;
+  return createGraph(declared.nodes, [...declared.edges, ...derived.values()]);
 }
 
 function buildNodes(plan: TerraformPlan, adapters: readonly ProviderAdapter[]) {

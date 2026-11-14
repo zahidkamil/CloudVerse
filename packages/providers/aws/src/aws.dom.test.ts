@@ -72,9 +72,9 @@ describe('AWS adapter with the sample plans', () => {
         expect(actual.size).toBeGreaterThan(10);
       });
 
-      it('gives every edge declared assertion and evidence', () => {
+      it('gives every edge evidence; reference edges stay declared, rule edges are inferred', () => {
         for (const edge of graph.edges) {
-          expect(edge.assertion).toBe('declared');
+          expect(edge.assertion).toBe(edge.kind === 'reference' || edge.kind === 'depends_on' ? 'declared' : 'inferred');
           expect(edge.evidence.length).toBeGreaterThan(0);
         }
       });
@@ -112,6 +112,7 @@ describe('AWS adapter with the sample plans', () => {
     const { graph } = ingestPlanObject(getSample('haunted')?.plan);
     expect(graph.nodes.every((n) => n.scope === undefined && n.role === 'unknown')).toBe(true);
     const withAdapter = ingestPlanObject(getSample('haunted')?.plan, { adapters: [awsAdapter] }).graph;
-    expect(graph.edges.map((e) => e.id)).toEqual(withAdapter.edges.map((e) => e.id));
+    expect(graph.edges.every((e) => e.assertion === 'declared')).toBe(true);
+    expect(withAdapter.edges.filter((e) => e.assertion === 'declared').map((e) => e.id)).toEqual(graph.edges.map((e) => e.id));
   });
 });

@@ -1,0 +1,14 @@
+# Tasks: Roles, semantic edges and hierarchy
+- [x] 1. Core: role descriptions, adapter hooks, derived edges merged in ingest
+  - _Requirements: R1, R3.1, R3.2, R3.9, R5_
+- [x] 2. Core: `buildHierarchy` and `summarizeGraph`
+  - _Requirements: R4_
+- [x] 3. AWS: role table, container table, relation rules
+  - _Requirements: R2, R3.3 to R3.8, R4.2_
+- [x] 4. Tests
+  - [x] 4.1 Core hierarchy unit and property tests (P1, P2, P6)
+  - [x] 4.2 Core multi-provider and derived-edge tests (P3, P4)
+  - [x] 4.3 AWS rule tests on synthetic plans and total roles (P5)
+  - [x] 4.4 Golden files for `haunted` and `web`
+- [x] 5. Tooling: `inspect` shows roles and tree; `golden:update` script
+- [x] 6. Docs: structure steering, README, local plan; run all checks

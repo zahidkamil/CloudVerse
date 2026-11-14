@@ -3,7 +3,7 @@
 ```
 packages/
   core/                 provider-neutral graph, ingest, redaction, adapter interface and
-                        generic fallback adapter (hierarchy and diff arrive later)
+                        generic fallback adapter, hierarchy (diff arrives later)
   providers/aws/        AWS adapter (depends on core only)
   analysis/             modeled attack paths, impact, remediation patches
   layout/               layout strategies

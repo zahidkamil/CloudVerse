@@ -20,6 +20,20 @@ export const ROLES = [
 
 export type Role = (typeof ROLES)[number];
 
+/** One line per role, written without naming any provider. */
+export const ROLE_DESCRIPTIONS: Readonly<Record<Role, string>> = Object.freeze({
+  compute: 'Runs code.',
+  'object-storage': 'Stores blobs of data.',
+  database: 'Stores structured data.',
+  identity: 'Decides who or what may act, and what they may do.',
+  'network-container': 'A private network boundary.',
+  subnet: 'A slice of a network.',
+  'traffic-filter': 'Decides what may reach a resource.',
+  gateway: 'A way into or out of a network or service.',
+  connectivity: 'Plumbing that links things together.',
+  unknown: 'No rule matched this resource type.',
+});
+
 /** A place a resource lives, such as a region. */
 export interface Scope {
   readonly kind: string;

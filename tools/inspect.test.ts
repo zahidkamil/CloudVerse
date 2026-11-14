@@ -17,9 +17,12 @@ describe('inspect CLI (runs the real script on Node, workspace packages included
     const result = run('haunted');
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('Graph: 22 nodes,');
-    expect(result.stdout).toContain('aws_instance.mansion  [aws/unknown]  haunted-mansion  region:us-east-1  create');
+    expect(result.stdout).toContain('aws_instance.mansion  [aws/compute]  haunted-mansion  region:us-east-1  create');
     expect(result.stdout).toContain('aws_instance.mansion -> aws_subnet.graveyard  reference  declared');
     expect(result.stdout).toContain('aws_instance.mansion subnet_id references aws_subnet.graveyard.id');
+    expect(result.stdout).toContain('aws_instance.mansion -> aws_iam_role.mansion_spirit  runs-as  inferred');
+    expect(result.stdout).toContain('HIERARCHY');
+    expect(result.stdout).toContain('~global/aws (Global)');
     expect(result.stdout).not.toContain('DIAGNOSTICS');
   });
 

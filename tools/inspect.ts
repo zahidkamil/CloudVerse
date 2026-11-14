@@ -6,13 +6,18 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { IngestError, ingestPlan, type Diagnostic, type Graph } from '@cloudverse/core';
+import { IngestError, ingestPlan, summarizeGraph, type Diagnostic, type Graph, type Hierarchy } from '@cloudverse/core';
 import { awsAdapter } from '@cloudverse/provider-aws';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const samplesRoot = join(root, 'packages/samples/data');
 
-export function formatGraph(graph: Graph, diagnostics: readonly Diagnostic[], terraformVersion: string): string {
+export function formatGraph(
+  graph: Graph,
+  hierarchy: Hierarchy,
+  diagnostics: readonly Diagnostic[],
+  terraformVersion: string,
+): string {
   const lines: string[] = [
     `Graph: ${graph.nodes.length} nodes, ${graph.edges.length} edges (Terraform ${terraformVersion})`,
     '',
@@ -22,6 +27,8 @@ export function formatGraph(graph: Graph, diagnostics: readonly Diagnostic[], te
     const scope = node.scope ? `${node.scope.kind}:${node.scope.id}` : 'no scope';
     lines.push(`  ${node.id}  [${node.provider}/${node.role}]  ${node.label}  ${scope}  ${node.actions.join(',')}`);
   }
+  lines.push('', 'HIERARCHY');
+  for (const line of summarizeGraph(graph, hierarchy).tree) lines.push(`  ${line}`);
   lines.push('', 'EDGES');
   for (const edge of graph.edges) {
     lines.push(`  ${edge.from} -> ${edge.to}  ${edge.kind}  ${edge.assertion}`);
@@ -56,8 +63,8 @@ async function main(): Promise<void> {
   }
 
   try {
-    const { graph, diagnostics, terraformVersion } = await ingestPlan(readFileSync(path, 'utf8'), { adapters: [awsAdapter] });
-    console.log(formatGraph(graph, diagnostics, terraformVersion));
+    const { graph, hierarchy, diagnostics, terraformVersion } = await ingestPlan(readFileSync(path, 'utf8'), { adapters: [awsAdapter] });
+    console.log(formatGraph(graph, hierarchy, diagnostics, terraformVersion));
   } catch (error) {
     if (!(error instanceof IngestError)) throw error;
     console.error(`Cannot read ${path}: ${error.message}`);

@@ -44,7 +44,8 @@ instead, for example `corepack pnpm install`.
 | `pnpm typecheck` | TypeScript for browser code and Node tooling |
 | `pnpm test` | Vitest (Node and jsdom) |
 | `pnpm build` | build both apps |
-| `pnpm run inspect <plan.json \| sample-id>` | print the graph built from a plan |
+| `pnpm run inspect <plan.json \| sample-id>` | print the graph, roles and hierarchy built from a plan |
+| `pnpm run golden:update` | rewrite golden files after a reviewed change to roles, edges or tree |
 | `pnpm scan:secrets` | scan fixtures and samples for credentials |
 | `pnpm fixtures:validate` | validate committed sample data |
 | `pnpm fixtures:generate` | regenerate samples (development only; needs the Terraform CLI) |

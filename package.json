@@ -16,6 +16,7 @@
     "test": "vitest run",
     "build": "vite build apps/explorer && vite build apps/defense-lab",
     "inspect": "node tools/inspect.ts",
+    "golden:update": "node tools/golden-update.ts",
     "scan:secrets": "node tools/secret-scan.ts",
     "fixtures:validate": "node tools/fixtures-validate.ts",
     "fixtures:generate": "node tools/fixtures-generate.ts"
