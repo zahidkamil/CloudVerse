@@ -8,7 +8,11 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { listPlanAddresses, validatePlanShape } from './plan-shape.ts';
+import { validatePlan } from '@cloudverse/core';
+
+/** Resource addresses in a plan that has already passed validation. */
+const planAddresses = (plan: unknown): string[] =>
+  (plan as { resource_changes: { address: string }[] }).resource_changes.map((change) => change.address);
 
 export const REQUIRED_FILES = ['plan.json', 'meta.json', 'snippets.json'] as const;
 const REQUIRED_META_KEYS = ['id', 'title', 'description', 'generated', 'terraformVersion', 'providers'] as const;
@@ -26,14 +30,15 @@ export function validateSampleDir(dir: string, expectedId: string): string[] {
   const meta = read('meta.json') as Record<string, unknown>;
   const snippets = read('snippets.json') as Record<string, unknown>;
 
-  for (const issue of validatePlanShape(plan)) problems.push(`${expectedId}: plan.json ${issue.path}: ${issue.message}`);
+  const planIssues = validatePlan(plan);
+  for (const issue of planIssues) problems.push(`${expectedId}: plan.json ${issue.path}: ${issue.message}`);
 
   for (const key of REQUIRED_META_KEYS) {
     if (!(key in meta)) problems.push(`${expectedId}: meta.json missing "${key}"`);
   }
   if (meta.id !== expectedId) problems.push(`${expectedId}: meta.json id "${String(meta.id)}" must match directory name`);
 
-  const addresses = new Set(listPlanAddresses(plan));
+  const addresses = new Set(planIssues.length === 0 ? planAddresses(plan) : []);
   for (const address of addresses) {
     if (typeof snippets[address] !== 'string') problems.push(`${expectedId}: no HCL snippet for ${address}`);
   }

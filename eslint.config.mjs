@@ -23,11 +23,11 @@ const NO_DEEP = 'Import packages only through their public entry point, never th
  * options across blocks, so every block gets the full base list plus its extras.
  * @param {{ group: string[]; message: string }[]} extra
  */
-function restrict(extra = []) {
+function restrict(extra = [], extraPaths = []) {
   return [
     'error',
     {
-      paths: NODE_BUILTINS.map((name) => ({ name, message: NO_NODE })),
+      paths: [...NODE_BUILTINS.map((name) => ({ name, message: NO_NODE })), ...extraPaths],
       patterns: [
         { group: ['node:*'], message: NO_NODE },
         { group: ['@cloudverse/*/*'], message: NO_DEEP },
@@ -38,6 +38,16 @@ function restrict(extra = []) {
 }
 
 const layer = (groups, message) => [{ group: groups, message }];
+
+// Building a graph is the only way to write one. Themes and the renderer may read
+// graphs (types, lookups) but must never be able to create or change infrastructure.
+const NO_GRAPH_BUILDING = [
+  {
+    name: '@cloudverse/core',
+    importNames: ['createGraph', 'ingestPlan', 'ingestPlanObject'],
+    message: 'theme and render must not build graphs; they only read them.',
+  },
+];
 const PROVIDERS = '@cloudverse/provider-*';
 
 export default tseslint.config(
@@ -138,6 +148,7 @@ export default tseslint.config(
           ['@cloudverse/analysis', '@cloudverse/challenge', '@cloudverse/ui-kit', '@cloudverse/app-*', PROVIDERS],
           'theme and render must not depend on analysis, challenge, providers, or UI.',
         ),
+        NO_GRAPH_BUILDING,
       ),
     },
   },
@@ -152,6 +163,7 @@ export default tseslint.config(
           ],
           'theme is data-only and must not depend on render, analysis, challenge, providers, or UI.',
         ),
+        NO_GRAPH_BUILDING,
       ),
     },
   },

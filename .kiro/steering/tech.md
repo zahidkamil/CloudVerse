@@ -39,6 +39,7 @@ Set `COREPACK_ENABLE_DOWNLOAD_PROMPT=0` in non-interactive shells.
 | `pnpm typecheck` | `tsc` for browser code and for Node tooling |
 | `pnpm test` | Vitest, node and jsdom projects |
 | `pnpm build` | build both apps to `apps/*/dist` |
+| `pnpm run inspect <plan.json \| sample-id>` | print the graph built from a plan |
 | `pnpm scan:secrets` | scan fixtures/samples for credentials and real account IDs |
 | `pnpm fixtures:validate` | validate committed sample data (no Terraform needed) |
 | `pnpm fixtures:generate` | regenerate samples (needs Terraform and registry access) |

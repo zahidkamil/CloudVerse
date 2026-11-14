@@ -15,8 +15,8 @@ import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSyn
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { validatePlan } from '@cloudverse/core';
 import { extractResourceBlocks } from './hcl-snippets.ts';
-import { validatePlanShape } from './plan-shape.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const stacksRoot = join(root, 'fixtures/stacks');
@@ -75,7 +75,7 @@ function generateStack(stack: string): void {
     console.log(`[${stack}] terraform show -json`);
     const plan = JSON.parse(terraform(['show', '-json', planFile], stackDir, env)) as Record<string, unknown>;
 
-    const issues = validatePlanShape(plan);
+    const issues = validatePlan(plan);
     if (issues.length > 0) {
       throw new Error(`${stack}: generated plan is malformed: ${issues.map((i) => `${i.path} ${i.message}`).join('; ')}`);
     }

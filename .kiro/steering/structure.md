@@ -2,9 +2,9 @@
 
 ```
 packages/
-  core/                 provider-neutral graph, ingest, hierarchy, diff
+  core/                 provider-neutral graph, ingest, redaction, adapter interface and
+                        generic fallback adapter (hierarchy and diff arrive later)
   providers/aws/        AWS adapter (depends on core only)
-  providers/generic/    fallback adapter for unsupported types
   analysis/             modeled attack paths, impact, remediation patches
   layout/               layout strategies
   theme/                ThemeSpec schema, recipe DSL, library, validator (data only)
@@ -38,5 +38,10 @@ docs/                   environment notes and extension guides
 
 When adding a rule, add a failing-then-passing case to `tools/lint-boundaries.test.ts`.
 
-TODO (Task 2): once `core` exposes graph mutation APIs, forbid `theme`/`render` from
-importing them and record the exact rule here.
+Graphs are immutable and building one is the only way to write one. `theme` and `render`
+may read graphs (types, lookups) but may not import `createGraph`, `ingestPlan`, or
+`ingestPlanObject` from `@cloudverse/core`. The UI kit and apps may, because they import
+plans. This is enforced by lint and tested.
+
+Adding a cloud: implement `ProviderAdapter` in a new `packages/providers/<name>` package
+that depends only on `@cloudverse/core`, and pass it to `ingestPlan`. Core never changes.

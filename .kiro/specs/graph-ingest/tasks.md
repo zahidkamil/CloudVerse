@@ -1,0 +1,35 @@
+# Tasks: Provider-neutral graph and Terraform plan ingest
+
+- [x] 1. Add fast-check; fold the generic adapter into core and remove `providers/generic`
+  - _Requirements: R2.5, R7_
+- [x] 2. Model and graph
+  - [x] 2.1 Types and `ROLES` (`model.ts`)
+  - [x] 2.2 `createGraph`: validation, deep freeze, indexes (`graph.ts`)
+  - [x] 2.3 Tests including P2 and P6
+  - _Requirements: R4.1, R5_
+- [x] 3. Plan validation and parsing (`plan.ts`)
+  - [x] 3.1 `validatePlan`, `parsePlan`, `IngestError`, state detection
+  - [x] 3.2 Replace `tools/plan-shape.ts` usages with core
+  - _Requirements: R1.2 to R1.4_
+- [x] 4. Redaction (`redact.ts`)
+  - [x] 4.1 Sensitive mirror trees, key heuristic, `constant_value`
+  - [x] 4.2 Tests including P3
+  - _Requirements: R6_
+- [x] 5. Addresses (`addresses.ts`)
+  - [x] 5.1 `stripIndexes`, `resolveReference`, reference collection
+  - [x] 5.2 Tests including P5
+  - _Requirements: R2.1, R3_
+- [x] 6. Adapters and ingest
+  - [x] 6.1 `ProviderAdapter`, `providerIdFromName`, `genericAdapter` (`adapter.ts`)
+  - [x] 6.2 `ingestPlan` / `ingestPlanObject` (`ingest.ts`)
+  - [x] 6.3 Tests including P1 and P4, multi-provider and unsupported-type cases
+  - _Requirements: R1, R2, R3, R4_
+- [x] 7. AWS adapter and sample integration (`@cloudverse/provider-aws`)
+  - [x] 7.1 `awsAdapter`
+  - [x] 7.2 Ingest both samples; independent reference cross-check
+  - _Requirements: R7_
+- [x] 8. Tooling and boundaries
+  - [x] 8.1 `inspect` CLI (`tools/inspect.ts`)
+  - [x] 8.2 Lint rule: `theme`/`render` may not import graph-building APIs, with a test
+  - [x] 8.3 Update structure doc
+- [x] 9. Run lint, typecheck, tests, scans, build

@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { listPlanAddresses, validatePlanShape } from '../../../tools/plan-shape.ts';
 import { getSample, samples } from './index.ts';
 
 // Runs under jsdom: if sample data could not be loaded and used in a browser-like
-// environment (no Node APIs, no file system), this suite would fail.
+// environment (no Node APIs, no file system), this suite would fail. Parsing the
+// plans is covered where core and the AWS adapter are available.
+const addressesOf = (plan: unknown): string[] =>
+  (plan as { resource_changes: { address: string }[] }).resource_changes.map((change) => change.address);
+
 describe('@cloudverse/samples in a browser-like environment', () => {
   it('runs in a DOM environment', () => {
     expect(typeof window).toBe('object');
@@ -23,15 +26,9 @@ describe('@cloudverse/samples in a browser-like environment', () => {
     }
   });
 
-  it('contains structurally valid Terraform plans', () => {
-    for (const sample of samples) {
-      expect(validatePlanShape(sample.plan), sample.id).toEqual([]);
-    }
-  });
-
   it('has an HCL snippet for exactly the resources in each plan', () => {
     for (const sample of samples) {
-      expect(Object.keys(sample.snippets).sort(), sample.id).toEqual([...listPlanAddresses(sample.plan)].sort());
+      expect(Object.keys(sample.snippets).sort(), sample.id).toEqual(addressesOf(sample.plan).sort());
     }
   });
 

@@ -58,6 +58,18 @@ describe('layering', () => {
     expect(await violations('packages/render/src/x.ts', `import x from '@cloudverse/challenge';\nvoid x;`)).toHaveLength(1);
   });
 
+  it('lets themes and the renderer read graphs but never build them', async () => {
+    for (const pkg of ['theme', 'render']) {
+      for (const name of ['createGraph', 'ingestPlan', 'ingestPlanObject']) {
+        expect(await violations(`packages/${pkg}/src/x.ts`, `import { ${name} } from '@cloudverse/core';\nvoid ${name};`), `${pkg} ${name}`).toHaveLength(1);
+      }
+      expect(await violations(`packages/${pkg}/src/x.ts`, `import type { Graph, GraphNode } from '@cloudverse/core';\nexport type T = [Graph, GraphNode];`)).toEqual([]);
+    }
+    // The UI kit and apps do need to ingest plans.
+    expect(await violations('packages/ui-kit/src/x.ts', `import { ingestPlan } from '@cloudverse/core';\nvoid ingestPlan;`)).toEqual([]);
+    expect(await violations('apps/explorer/src/x.ts', `import { ingestPlan } from '@cloudverse/core';\nvoid ingestPlan;`)).toEqual([]);
+  });
+
   it('keeps analysis and layout free of presentation packages', async () => {
     expect(await violations('packages/analysis/src/x.ts', `import x from '@cloudverse/render';\nvoid x;`)).toHaveLength(1);
     expect(await violations('packages/layout/src/x.ts', `import x from '@cloudverse/theme';\nvoid x;`)).toHaveLength(1);
