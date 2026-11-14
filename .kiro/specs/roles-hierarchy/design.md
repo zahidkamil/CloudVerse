@@ -69,7 +69,7 @@ attributes (such as `referenced_security_group_id`) are missing from `after`.
 | `runs-as` | instance to role | instance to profile (`iam_instance_profile`) to role (`role`) |
 | `grants-access` | role to resource | role policy to role (`role`) plus any other declared target of the policy |
 | `routes-via` | subnet to gateway | association to subnet and route table; route to route table and gateway (`gateway_id`) |
-| `guards` | public access block to bucket | declared `bucket` edge; flags from attributes |
+| `guards` | public access block to bucket | declared `bucket` edge; the four **bucket-level** flags from attributes. Account-level Block Public Access, bucket policies and ACLs are not read, so effective public access is always `undetermined` |
 
 CIDR-based rules produce no edge: there is no node on the other end. Their CIDR and ports
 stay in node attributes for Task 7.
@@ -124,8 +124,8 @@ files) and the `haunted` and `web` plans.
 | Instance, profile, role | instance `iam_instance_profile` is the profile **name**; profile `role` is the role name | known `role`/`iam_instance_profile` values are names; references point at `.name` | Confirmed, no change |
 | Role policy | `role` is the role name; `policy` is a JSON document | `role` unknown; web `policy` unknown (it references the bucket); haunted `policy` known with `Resource: "*"` | A reference does not prove Allow. Now skipped when a known document has no Allow, and evidence says it was not evaluated |
 | Subnet and routes | association has `subnet_id` or `gateway_id`; `aws_route.gateway_id` is an internet or virtual private gateway, `nat_gateway_id` is NAT; `aws_route_table` can hold inline `route` blocks | `subnet_id`, `route_table_id`, `gateway_id` unknown; destination CIDR known | Fixed: VPN gateway, inline routes (no destination claimed, since a set's order may differ), gateway associations ignored |
-| S3 public access block | four flags default to `false`; `bucket` required | `bucket` unknown; flags known (haunted all false, web all true) | Confirmed. Wording now says "not confirmed on" when a flag is missing |
+| S3 public access block | four flags default to `false`; `bucket` required | `bucket` unknown; flags known (haunted all false, web all true) | Confirmed. Evidence now states the level is bucket, uses "bucket-level block settings are off" when all four are off, and records effective public access as undetermined |
 
 Not covered, by choice: inline `ingress`/`egress` blocks of `aws_security_group`,
-`aws_security_group_rule` (the docs call both legacy), account-level public access blocks,
+`aws_security_group_rule` (the docs call both legacy), account-level public access blocks (`aws_s3_account_public_access_block`; `guards` is bucket-level only),
 and route targets other than gateways (peering, transit gateway, endpoints).

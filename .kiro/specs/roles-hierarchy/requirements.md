@@ -60,7 +60,13 @@ covers every provider.
    THE graph SHALL gain `routes-via` from the subnet to the gateway, with the destination CIDR
    when it is known. Associations made to a gateway instead of a subnet SHALL NOT add one.
 7. WHEN a public access block applies to a bucket, THE graph SHALL gain `guards` from the
-   block to the bucket, with the four block flags in the evidence.
+   block to the bucket, with the four flags in the evidence. `guards` describes **bucket-level**
+   S3 Block Public Access settings only. Account-level Block Public Access, bucket policies and
+   ACLs are outside Task 3. With all four flags off the evidence SHALL say "bucket-level block
+   settings are off", with all four on "all four bucket-level block settings are on", otherwise
+   "some bucket-level block settings are off or not confirmed". In every case it SHALL record
+   `level: 'bucket'` and `effectivePublicAccess: 'undetermined'`, and SHALL NOT say the bucket
+   is or is not public.
 8. Rules SHALL read declared evidence (reference paths), not guessed names or tags, because
    computed attributes are absent from plans.
 9. Semantic edges SHALL NOT change or remove declared edges.

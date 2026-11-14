@@ -206,17 +206,29 @@ function subnetRoutes(graph: Graph): DerivedEdge[] {
 
 const BLOCK_FLAGS = ['block_public_acls', 'block_public_policy', 'ignore_public_acls', 'restrict_public_buckets'] as const;
 
+/**
+ * `guards` describes the bucket-level S3 Block Public Access settings only. Account-level
+ * Block Public Access, bucket policies and ACLs are not read, so what the public can actually
+ * reach stays undetermined whatever the flags say.
+ */
 function publicAccessBlocks(graph: Graph): DerivedEdge[] {
   const out: DerivedEdge[] = [];
   for (const block of ofType(graph, 'aws_s3_bucket_public_access_block')) {
     const flags: Record<string, boolean | null> = {};
     for (const flag of BLOCK_FLAGS) flags[flag] = typeof block.attrs[flag] === 'boolean' ? (block.attrs[flag] as boolean) : null;
     const allBlocked = BLOCK_FLAGS.every((flag) => flags[flag] === true);
+    const allOff = BLOCK_FLAGS.every((flag) => flags[flag] === false);
+    const state = allBlocked ? 'all-on' : allOff ? 'all-off' : 'mixed-or-unknown';
+    const words = {
+      'all-on': 'all four bucket-level block settings are on',
+      'all-off': 'bucket-level block settings are off',
+      'mixed-or-unknown': 'some bucket-level block settings are off or not confirmed',
+    }[state];
     for (const bucket of targets(graph, block, 'bucket', 'aws_s3_bucket')) {
       const evidence: Evidence = {
         kind: 'public-access-block',
-        summary: `${block.address} applies to ${bucket.address}; ${allBlocked ? 'all four block settings are on' : 'not every block setting is confirmed on'}`,
-        data: { block: block.address, allBlocked, ...flags },
+        summary: `${block.address} applies to ${bucket.address}; ${words}. Effective public access is not determined (account-level settings, bucket policy and ACLs are not read).`,
+        data: { block: block.address, level: 'bucket', state, allBlocked, effectivePublicAccess: 'undetermined', ...flags },
       };
       out.push({ from: block.id, to: bucket.id, kind: 'guards', evidence: [evidence] });
     }

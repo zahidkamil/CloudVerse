@@ -135,7 +135,22 @@ describe('guards: public access block flags', () => {
       delete change(plan, 'aws_s3_bucket_public_access_block.assets').after.restrict_public_buckets;
     });
     const edge = graph.edges.find((e) => e.kind === 'guards');
-    expect(edge?.evidence[0]?.data).toMatchObject({ allBlocked: false, restrict_public_buckets: null, block_public_acls: true });
-    expect(edge?.evidence[0]?.summary).toContain('not every block setting is confirmed on');
+    expect(edge?.evidence[0]?.data).toMatchObject({ allBlocked: false, state: 'mixed-or-unknown', restrict_public_buckets: null, block_public_acls: true });
+    expect(edge?.evidence[0]?.summary).toContain('some bucket-level block settings are off or not confirmed');
+  });
+
+  it('with all four flags off, says the bucket-level settings are off and leaves effective access undetermined', () => {
+    const edge = edited('haunted', () => {}).edges.find((e) => e.kind === 'guards');
+    expect(edge?.evidence[0]?.data).toMatchObject({ level: 'bucket', state: 'all-off', effectivePublicAccess: 'undetermined' });
+    const summary = edge?.evidence[0]?.summary ?? '';
+    expect(summary).toContain('bucket-level block settings are off');
+    expect(summary).toContain('Effective public access is not determined');
+    expect(summary).not.toMatch(/\bpublic\b(?! access)/i); // never says the bucket is public
+  });
+
+  it('with all four flags on, still leaves effective access undetermined', () => {
+    const edge = edited('web', () => {}).edges.find((e) => e.kind === 'guards');
+    expect(edge?.evidence[0]?.data).toMatchObject({ level: 'bucket', state: 'all-on', effectivePublicAccess: 'undetermined' });
+    expect(edge?.evidence[0]?.summary).toContain('all four bucket-level block settings are on');
   });
 });
